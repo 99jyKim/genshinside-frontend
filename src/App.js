@@ -1,40 +1,60 @@
-import React, { useEffect, useState } from 'react'
-
 import './App.css'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import Container from './Container.js'
+
+const SERVER_URL = "http://localhost:8080/api"
+
 
 const App = () => {
-  const [message, setMessage] = useState('서버 접속 중...')
+  const [chars, setChars] = useState([])
 
-  const fetchData = async () => {
+  const getChar = async () => {
     try {
-      //const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8080/api/message'
-      //const apiUrl = 'http://localhost:8080/api/message'
-      const apiUrl = process.env.REACT_APP_API_URL
+      const res = await axios.get(SERVER_URL + '/chars')
+      console.log(res)
+      setChars(res.data)
+    } catch (err) {
+      console.log(err)
 
-      const response = await fetch(apiUrl)
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok')
-      }
-
-      const data = await response.json()
-
-      setMessage(data.status);
-    } catch (error) {
-      console.error('Error fetching data: ', error)
+      setChars([])
     }
   }
 
   useEffect(() => {
-    fetchData()
+    getChar()
   }, [])
 
   return (
-    <div className="App">
-      <h1>Back-end로부터 받은 메시지</h1>
-      <p>{message}</p>
+    <div>
+      <Header />
+      <CharacterList
+        title="Characters"
+        listCharacter={chars}
+      />
     </div>
   )
 }
+
+const Header = () => {
+  return (
+    <h1>Genshin Characters</h1>
+  )
+}
+
+const CharacterList = ({ title, listCharacter = [] }) => {
+  return (
+    <>
+      <h2 >{title}</h2>
+      <div className='characterlist'>
+        {
+          listCharacter.map(character =>
+            <Container key={character.id} character={character} />
+          )
+        }
+      </div>
+    </>
+  );
+};
 
 export default App
